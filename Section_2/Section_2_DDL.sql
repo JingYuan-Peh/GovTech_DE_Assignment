@@ -6,7 +6,7 @@ create table car(
 	serialnumber varchar(100) PRIMARY KEY,
 	manufacturer varchar(100),
 	modelName varchar(100),
-	weight varchar(100),
+	weight numeric,
 	price numeric
 );
 
@@ -26,38 +26,76 @@ create table transaction(
 	salespersonid varchar(100) REFERENCES salesperson,
 	customerid varchar(100) REFERENCES customer,
 	datetime_transacted TIMESTAMP,
-	PRIMARY KEY (serialnumber, salespersonid, customerid)
+	PRIMARY KEY (serialnumber, salespersonid, customerid, datetime_transacted)
 );
 
--- I want to know the list of our customers and their spending.
-select
-	c.customerid, sum(ca.price) as total_spending
-from
-	customer c left join transaction t on c.customerid = t.customerid
-	left join car ca on t.serialnumber = ca.serialnumber
-group by c.customerid;
+-- insert some dummy data
+insert into car(serialnumber, manufacturer, modelName, weight, price)
+values
+('10000', 'Honda', 'Fit', 1000, 50000),
+('10001', 'Honda', 'Jazz', 1000, 55000),
+('10002', 'Honda', 'Civic', 1000, 70000),
+('20000', 'Mercedes Benz', 'CLA180', 1000, 120000),
+('20001', 'Mercedes Benz', 'C-Class', 1000, 150000),
+('20002', 'Mercedes Benz', 'E-Class', 1000, 250000),
+('30000', 'Toyota', 'Yaris', 1000, 50000),
+('30001', 'Toyota', 'Corolla Altis', 1000, 55000),
+('30002', 'Toyota', 'Camry', 1000, 70000),
+('40000', 'BMW', '2 Series', 1000, 80000),
+('40001', 'BMW', '3 Series', 1000, 140000),
+('40002', 'BMW', '4 Series', 1000, 80000),
+('50000', 'Audi', 'A3', 1000, 80000),
+('50001', 'Audi', 'A4', 1000, 130000),
+('50002', 'Audi', 'A5', 1000, 170000)
+;
 
--- I want to find out the top 3 car manufacturers that customers bought by sales (quantity)
--- and the sales number for it in the current month.
-with
-	manu_total_cars as (
-		select
-			ca.manufacturer, count(t.serialnumber) as total_cars
-		from
-			transaction t left join car ca on t.serialnumber = ca.serialnumber
-		group by ca.manufacturer
-	),
-	top_3_manu as (
-		select
-			manufacturer, total_cars,
-			dense_rank() over (order by total_cars) as rnk
-		from
-			manu_total_cars
-	)
-select
-	temp.manufacturer, total_cars
-from
-	top_3_manu temp
-where
-	temp.rnk <= 3
+insert into salesperson(salespersonid,salespersonname)
+values
+('A100', 'John'),
+('A200', 'Jack'),
+('A300', 'Jill')
+;
+
+insert into customer(customerid,customername,customerphone)
+values
+('C100', 'John', '91000000'),
+('C200', 'Jack', '91000001'),
+('C300', 'Jill', '91000002'),
+('C400', 'Tom', '91000003'),
+('C500', 'Dick', '91000004'),
+('C600', 'Harry', '91000005'),
+('C700', 'Cass', '91000006'),
+('C800', 'Clara', '91000007'),
+('C900', 'Candy', '91000008')
+;
+
+insert into transaction(serialnumber, salespersonid, customerid, datetime_transacted)
+values
+('10000', 'A100', 'C100', '2021-11-30 09:00:00'),
+('10000', 'A100', 'C200', '2021-11-30 09:00:00'),
+('20000', 'A200', 'C300', '2021-11-30 09:00:00'),
+('40000', 'A200', 'C300', '2021-11-30 09:00:00'),
+('20000', 'A200', 'C400', '2021-11-30 09:00:00'),
+('30000', 'A200', 'C200', '2021-11-30 09:00:00'),
+('40002', 'A200', 'C300', '2021-11-30 09:00:00'),
+('20000', 'A300', 'C200', '2021-12-30 09:00:00'),
+('20001', 'A300', 'C700', '2021-12-30 09:00:00'),
+('20001', 'A300', 'C600', '2021-12-30 09:00:00'),
+('20002', 'A300', 'C800', '2021-12-30 09:00:00'),
+('30000', 'A100', 'C800', '2021-12-30 09:00:00'),
+('30000', 'A200', 'C500', '2021-12-30 09:00:00'),
+('30001', 'A300', 'C400', '2021-12-30 09:00:00'),
+('30002', 'A300', 'C300', '2021-12-30 09:00:00'),
+('50000', 'A100', 'C200', '2021-12-30 09:00:00'),
+('10000', 'A200', 'C100', '2021-12-30 09:00:00'),
+('20001', 'A300', 'C300', '2021-12-30 09:00:00'),
+('30002', 'A300', 'C500', '2021-12-30 09:00:00'),
+('20000', 'A100', 'C100', '2022-01-30 09:00:00'),
+('30000', 'A100', 'C200', '2022-01-30 09:00:00'),
+('40002', 'A100', 'C300', '2022-01-30 09:00:00'),
+('10002', 'A100', 'C400', '2022-01-30 09:00:00'),
+('10002', 'A100', 'C500', '2022-01-30 09:00:00'),
+('10001', 'A100', 'C600', '2022-01-30 09:00:00'),
+('10001', 'A100', 'C700', '2022-01-30 09:00:00'),
+('50000', 'A100', 'C800', '2022-01-30 09:00:00')
 ;
