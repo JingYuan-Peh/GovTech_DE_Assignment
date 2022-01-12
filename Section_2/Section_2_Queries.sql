@@ -1,6 +1,6 @@
 -- I want to know the list of our customers and their spending.
 select
-	c.customerid, sum(ca.price) as total_spending
+	c.customerid, coalesce(sum(ca.price), 0) as total_spending
 from
 	customer c left join transaction t on c.customerid = t.customerid
 	left join car ca on t.serialnumber = ca.serialnumber
